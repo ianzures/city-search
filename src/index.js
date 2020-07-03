@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import './index.css';
 import App from './App';
 import * as serviceWorker from './serviceWorker';
-/*
+
 document.body.style = 'background: #ffffcc;';
 
 const headBox = {
@@ -30,27 +30,31 @@ const search = {
 }
 
 const result = {
-    marginTop: '.5%',
-    marginLeft: '40%',
-    marginRight: '40%',
+    marginTop: '3%',
+    marginLeft: '30%',
+    marginRight: '30%',
+    paddingLeft: '2%',
+    paddingBottom: "2%",
+    paddingRight: "2%",
     borderStyle: 'solid',
     borderRadius: '10px',
-    backgroundColor: '#fdfcfc'
+    backgroundColor: '#fdfcfc',
+    wordWrap: "normal",
+    fontFamily: "Times New Roman",
 }
 
 const cellTitle = {
-    fontSize: "110%",
+    fontSize: "120%",
     fontFamily: "Times New Roman",
-    marginLeft: '4%'
+    textDecoration: "underline"
 }
 
-*/
 export default class CitySearch extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            zipCodes: [],
             name: '',
+            formatted: ''
         };
     }
 
@@ -62,41 +66,53 @@ export default class CitySearch extends React.Component {
         // Set zipCodes to an empty list, so that the zip codes of the previous search a no longer displayed. 
         this.setState({ zipCodes: [] });
 
-        // Concatonate input to url and place result in zipCodes array.
+        // Concatonate input to url and ...
         axios.get("http://ctp-zip-api.herokuapp.com/city/" + this.state.name).then(result => {
-            this.setState({ zipCodes: result.data });
+
+            /* Convert the array of zip codes into a string. It is likely that we will exceed a reasonable number of strings to 
+               display seperately. Displaying a single string that wraps around will take up much less space on the page.*/
+            let str = '';
+            result.data.forEach(zip => str += (zip + ', '));
+
+            // Two characters need to be removed from the string, an extraneous comma and the space that follows.
+            this.setState({ formatted: str.substring(0, str.length - 2) });
 
             // If call to axios.get() fails, alert user that their input was invalid. 
         }).catch(function (err) {
                 alert("Invalid city name.");
             }
-        );
-
-
+        );  
+        
     }
 
     handleChange = event => {
-        this.setState({ name: event.target.value });
+        // Call to API only accepts names in all caps.
+        let formated = event.target.value.toUpperCase();
+        this.setState({ name: formated });
     }
 
     render() {
         return (
             <React.Fragment>
-                {/*
+
+                {/* Box containing the name of the page */}
                 <div style={headBox}>
 
+                    {/* Page title */}
                     <div style={title}> City Search </div>
-
-                </div>*/}
+                </div>
 
                 {/* User input */}
                 <form onSubmit={this.handleSubmit}>
-                    <label > Enter city name:
+                    <label style={search} > Enter city name: 
                         <input type="text" name="name" onChange={this.handleChange} />
                     </label>
                 </form>
-                {/*{this.state.zipCodes.map(x => <p>{x}</p>)}*/}
 
+                <div style={result}>
+                    <p style={cellTitle}>Zip codes associated with this city : </p><br></br>
+                    {this.state.formatted}
+                </div>
             </React.Fragment>
         )
     }
